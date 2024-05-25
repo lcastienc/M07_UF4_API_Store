@@ -56,7 +56,7 @@ def delete_product(request, pk):
 #Ver todos los productos
 @api_view(['GET'])
 def products_list(request):
-    products = Product.objects.all()
+    products = Product.objects.filter(deleted=False)
     serializer = ProductSerializer(products, many=True)
     return Response(serializer.data)
 
@@ -64,7 +64,7 @@ def products_list(request):
 @api_view(['GET'])
 def product_detail(request, pk):
     try:
-        product = Product.objects.get(pk=pk)
+        product = Product.objects.get(pk=pk, deleted=False)
     except Product.DoesNotExist:
         return Response({"error": "El producto que buscas no existe"}, status=404)
     serializer = ProductSerializer(product)
