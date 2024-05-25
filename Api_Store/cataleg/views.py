@@ -39,3 +39,16 @@ def update_stock_product(request, pk):
     product.stock = request.data.get('stock',product.stock)
     product.save()
     return Response({"message": "Producto actualizado exitosamente"}, status=200)
+
+#Borrado logico de un producto
+@api_view(['DELETE'])
+def delete_product(request, pk):
+    try:
+        product = Product.objects.get(pk=pk)
+    except Product.DoesNotExist:
+        return Response({"error": "Product does not exist"}, status=404)
+
+    product.deleted = True
+    product.save()
+
+    return Response({"status": "success", "message": "Product marked as deleted"})
