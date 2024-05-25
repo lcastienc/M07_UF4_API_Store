@@ -29,3 +29,13 @@ def update_product(request, pk):
         return Response({"message": 'Producto actualizado exitosamente', "data": serializer.data}, status=200)
     return Response({"error": serializer.errors, "message": 'No se ha podido actualizar el producto'}, status=400)
 
+#Manejo del stock del producto
+@api_view(['PATCH'])
+def update_stock_product(request, pk):
+    try:
+        product = Product.objects.get(pk=pk)
+    except Product.DoesNotExist:
+        return Response({"error": "El producto que quieres actulizar el stock no existe"}, status=404)
+    product.stock = request.data.get('stock',product.stock)
+    product.save()
+    return Response({"message": "Producto actualizado exitosamente"}, status=200)
