@@ -23,3 +23,11 @@ def client_list(request):
     return Response({"status": "success", "message": "Lista de clientes obtenida exitosamente", "data": serializer.data}, status=200)
 
 #Mostrar informacion de un cliente
+@api_view(['GET'])
+def client_detail(request, pk):
+    try:
+        client = Client.objects.get(pk=pk)
+    except Client.DoesNotExist:
+        return Response({"error": "El cliente que buscas no existe"}, status=404)
+    serializer = ClientSerializer(client)
+    return Response({"status": "success", "message": "Información del cliente obtenida exitosamente", "data": serializer.data}, status=200)
