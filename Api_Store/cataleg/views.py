@@ -4,7 +4,6 @@ from rest_framework.response import Response
 from .serializer import ProductSerializer
 from .models import Product
 
-
 # Create your views here.
 
 #Afegir producte
@@ -13,8 +12,8 @@ def add_product(request):
     serializer = ProductSerializer(data=request.data)
     if serializer.is_valid():
         serializer.save()
-        return Response(serializer.data)
-    return Response(serializer.errors)
+        return Response({"message": "Producto añadido exitosamente", "data": serializer.data}, status=201)
+    return Response({"error": serializer.errors, "message": "No se ha podido añadir el producto"}, status=400)
 
 #Actulizar un producto
 @api_view(['PUT'])
@@ -46,19 +45,20 @@ def delete_product(request, pk):
     try:
         product = Product.objects.get(pk=pk)
     except Product.DoesNotExist:
-        return Response({"error": "Product does not exist"}, status=404)
+        return Response({"error": "El producto no existe"}, status=404)
 
     product.deleted = True
     product.save()
 
-    return Response({"status": "success", "message": "Product marked as deleted"})
+    return Response({"status": "success", "message": "Producto marcado como eliminado"}, status=200)
 
 #Ver todos los productos
 @api_view(['GET'])
 def products_list(request):
     products = Product.objects.filter(deleted=False)
     serializer = ProductSerializer(products, many=True)
-    return Response(serializer.data)
+    return Response({"status": "success", "message": "Lista de productos obtenida exitosamente", "data": serializer.data}, status=200)
+
 
 #ver informacion de un solo producto
 @api_view(['GET'])
@@ -68,4 +68,4 @@ def product_detail(request, pk):
     except Product.DoesNotExist:
         return Response({"error": "El producto que buscas no existe"}, status=404)
     serializer = ProductSerializer(product)
-    return Response(serializer.data)
+    return Response({"status": "success", "message": "Información del producto obtenida exitosamente", "data": serializer.data}, status=200)
