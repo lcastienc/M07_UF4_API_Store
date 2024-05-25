@@ -52,3 +52,10 @@ def delete_product(request, pk):
     product.save()
 
     return Response({"status": "success", "message": "Product marked as deleted"})
+
+#Ver todos los productos
+@api_view(['GET'])
+def products_list(request):
+    products = Product.objects.all()
+    serializer = ProductSerializer(products, many=True)
+    return Response(serializer.data)
