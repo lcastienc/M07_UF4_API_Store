@@ -15,3 +15,11 @@ def add_Client(request):
         return Response({"message": 'Cliente creado exitosamente', "data": serializer.data}, status=200)
     return Response({"error": serializer.errors, "message": 'No se ha podido crear el cliente'}, status=400)
 
+#lista de clientes
+@api_view(['GET'])
+def client_list(request):
+    clients = Client.objects.all()
+    serializer = ClientSerializer(clients, many=True)
+    return Response({"status": "success", "message": "Lista de clientes obtenida exitosamente", "data": serializer.data}, status=200)
+
+#Mostrar informacion de un cliente
