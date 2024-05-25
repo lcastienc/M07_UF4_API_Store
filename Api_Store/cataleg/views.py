@@ -59,3 +59,13 @@ def products_list(request):
     products = Product.objects.all()
     serializer = ProductSerializer(products, many=True)
     return Response(serializer.data)
+
+#ver informacion de un solo producto
+@api_view(['GET'])
+def product_detail(request, pk):
+    try:
+        product = Product.objects.get(pk=pk)
+    except Product.DoesNotExist:
+        return Response({"error": "El producto que buscas no existe"}, status=404)
+    serializer = ProductSerializer(product)
+    return Response(serializer.data)
