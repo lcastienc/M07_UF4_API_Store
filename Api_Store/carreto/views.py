@@ -7,6 +7,8 @@ from .serializer import CarretoSerializer,CarretoProductSerializer
 from client.models import Client
 from client.serializer import ClientSerializer
 from cataleg.models import Product
+from comandes.models import Comanda
+from comandes.serializer import ComandaSerializer
 
 # Create your views here.
 
@@ -211,6 +213,46 @@ def list_carreto_products(request, client_id, carreto_id):
         "status": "success",
         "message": "Carrito y productos encontrados exitosamente",
         "carreto_info": carreto_serializer.data,
+        "carreto_products": carreto_products_serializer.data
+    }
+
+    return Response(response_data, status=200)
+
+#Comprar
+@api_view(['POST'])
+def realitzar_compra(request):
+    client_id = request.data.get('client_id')
+    carreto_id = request.data.get('carreto_id')
+
+    if not client_id or not carreto_id:
+        return Response({"status": "error", "message": "Se requieren los campos: client_id y carreto_id"}, status=400)
+
+    try:
+        client = Client.objects.get(id=client_id)
+    except Client.DoesNotExist:
+        return Response({"status": "error", "message": "Cliente no encontrado"}, status=404)
+
+    try:
+        carreto = Carreto.objects.get(id=carreto_id, client=client, finalitzat=False)
+    except Carreto.DoesNotExist:
+        return Response({"status": "error", "message": "Carrito no encontrado o ya finalizado"}, status=404)
+
+    # Actualizar el estado del carrito a finalizado
+    carreto.finalitzat = True
+    carreto.save()
+
+    # Crear un nuevo registro en la tabla de comanda
+    comanda = Comanda.objects.create(client=client, carreto=carreto)
+
+    # Serializar los datos
+    comanda_serializer = ComandaSerializer(comanda)
+    carreto_products = CarretoProduct.objects.filter(carreto=carreto)
+    carreto_products_serializer = CarretoProductSerializer(carreto_products, many=True)
+
+    response_data = {
+        "status": "success",
+        "message": "Compra realizada exitosamente",
+        "comanda_info": comanda_serializer.data,
         "carreto_products": carreto_products_serializer.data
     }
 
