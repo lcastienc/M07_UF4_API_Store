@@ -112,6 +112,22 @@ def delete_product_from_carreto(request):
     }
     return Response(response_data, status=200)
 
+#Eliminar tot el carretó
+@api_view(['DELETE'])
+def delete_carreto(request, client_id, carreto_id):
+    try:
+        client = Client.objects.get(id=client_id)
+    except Client.DoesNotExist:
+        return Response({"status": "error", "message": "Cliente no encontrado"}, status=404)
+
+    try:
+        carreto = Carreto.objects.get(id=carreto_id, client=client, finalitzat=False)
+    except Carreto.DoesNotExist:
+        return Response({"status": "error", "message": "Carrito no encontrado o ya finalizado"}, status=404)
+
+    carreto.delete()
+
+    return Response({"status": "success", "message": "Carrito eliminado exitosamente"}, status=200)
 
 #Modificar quantitat d’un producte
 @api_view(['PUT'])
