@@ -14,3 +14,15 @@ def list_comandes(request):
     comandes = Comanda.objects.all()
     serializer = ComandaSerializer(comandes, many=True)
     return Response({"status": "success", "message": "Historial de comandes recuperado exitosamente", "data": serializer.data})
+
+#Mostrar historial de comandes per un client en concret
+@api_view(['GET'])
+def list_comandes_by_client(request, client_id):
+    try:
+        client = Client.objects.get(id=client_id)
+    except Client.DoesNotExist:
+        return Response({"status": "error", "message": "Cliente no encontrado"}, status=404)
+
+    comandes = Comanda.objects.filter(client=client)
+    serializer = ComandaSerializer(comandes, many=True)
+    return Response({"status": "success", "message": "Historial de comandes del cliente recuperado exitosamente", "data": serializer.data})
