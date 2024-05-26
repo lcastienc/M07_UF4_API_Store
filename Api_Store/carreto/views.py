@@ -74,3 +74,33 @@ def add_product_to_carreto(request):
         }
     }
     return Response(response_data, status=201)
+
+
+#Consultar el llistat de productes del carretó
+@api_view(['GET'])
+def list_carreto_products(request, client_id, carreto_id):
+    if not client_id or not carreto_id:
+        return Response({"status": "error", "message": "Se requiere el ID del cliente y el ID del carrito"}, status=400)
+
+    try:
+        client = Client.objects.get(id=client_id)
+    except Client.DoesNotExist:
+        return Response({"status": "error", "message": "Cliente no encontrado"}, status=404)
+
+    try:
+        carreto = Carreto.objects.get(id=carreto_id, client=client, finalitzat=False)
+    except Carreto.DoesNotExist:
+        return Response({"status": "error", "message": "No hay carrito abierto para este cliente"}, status=404)
+
+    carreto_serializer = CarretoSerializer(carreto)
+    carreto_products = carreto.carretoproduct_set.all()
+    carreto_products_serializer = CarretoProductSerializer(carreto_products, many=True)
+
+    response_data = {
+        "status": "success",
+        "message": "Carrito y productos encontrados exitosamente",
+        "carreto_info": carreto_serializer.data,
+        "carreto_products": carreto_products_serializer.data
+    }
+
+    return Response(response_data, status=200)
