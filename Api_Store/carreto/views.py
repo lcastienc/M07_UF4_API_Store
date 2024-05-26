@@ -75,6 +75,43 @@ def add_product_to_carreto(request):
     }
     return Response(response_data, status=201)
 
+#Borrar producto del carreto
+@api_view(['POST'])
+def delete_product_from_carreto(request):
+    carreto_id = request.data.get('carreto_id')
+    product_id = request.data.get('product_id')
+
+    try:
+        carreto = Carreto.objects.get(id=carreto_id, finalitzat=False)
+    except Carreto.DoesNotExist:
+        return Response({"status": "error", "message": "No hay carrito abierto para este cliente"}, status=404)
+
+    carreto_products = CarretoProduct.objects.filter(carreto=carreto, product_id=product_id)
+
+    if not carreto_products.exists():
+        return Response({"status": "error", "message": "El producto no está en el carrito"}, status=404)
+
+    # Calcular el precio total a restar del carrito
+    total_price_to_subtract = sum(cp.preu for cp in carreto_products)
+
+    # Actualizar el precio total del carrito
+    carreto.preu_total -= total_price_to_subtract
+    carreto.save()
+
+    # Eliminar todos los productos del carrito
+    carreto_products.delete()
+
+    # Serializar la respuesta
+    carreto_serializer = CarretoSerializer(carreto)
+
+    # Construir la respuesta completa
+    response_data = {
+        "status": "success",
+        "message": "Producto(s) eliminado(s) del carrito exitosamente",
+        "carreto_info": carreto_serializer.data
+    }
+    return Response(response_data, status=200)
+
 
 #Consultar el llistat de productes del carretó
 @api_view(['GET'])
