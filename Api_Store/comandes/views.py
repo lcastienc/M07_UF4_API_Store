@@ -26,3 +26,10 @@ def list_comandes_by_client(request, client_id):
     comandes = Comanda.objects.filter(client=client)
     serializer = ComandaSerializer(comandes, many=True)
     return Response({"status": "success", "message": "Historial de comandes del cliente recuperado exitosamente", "data": serializer.data})
+
+#Mostrar historial de comandes que no estan finalitzades
+@api_view(['GET'])
+def list_open_comandes(request):
+    comandes = Comanda.objects.filter(estat='Obert')
+    serializer = ComandaSerializer(comandes, many=True)
+    return Response({"status": "success", "message": "Historial de comandes abiertas recuperado exitosamente", "data": serializer.data})
