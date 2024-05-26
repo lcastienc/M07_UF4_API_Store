@@ -113,6 +113,64 @@ def delete_product_from_carreto(request):
     return Response(response_data, status=200)
 
 
+#Modificar quantitat d’un producte
+@api_view(['PUT'])
+def update_product_quantity(request):
+    client_id = request.data.get('client_id')
+    carreto_id = request.data.get('carreto_id')
+    product_id = request.data.get('product_id')
+    new_quantity = request.data.get('new_quantity')
+
+    if not (client_id and carreto_id and product_id and new_quantity):
+        return Response({"status": "error", "message": "Se requieren todos los campos: client_id, carreto_id, product_id y new_quantity"}, status=400)
+
+    try:
+        client = Client.objects.get(id=client_id)
+    except Client.DoesNotExist:
+        return Response({"status": "error", "message": "Cliente no encontrado"}, status=404)
+
+    try:
+        carreto = Carreto.objects.get(id=carreto_id, client=client, finalitzat=False)
+    except Carreto.DoesNotExist:
+        return Response({"status": "error", "message": "Carrito no encontrado o ya finalizado"}, status=404)
+
+    try:
+        carreto_product = CarretoProduct.objects.get(carreto=carreto, product_id=product_id)
+    except CarretoProduct.DoesNotExist:
+        return Response({"status": "error", "message": "Producto no encontrado en el carrito"}, status=404)
+
+    try:
+        new_quantity = int(new_quantity)
+        if new_quantity < 1:
+            return Response({"status": "error", "message": "La cantidad debe ser al menos 1"}, status=400)
+    except ValueError:
+        return Response({"status": "error", "message": "La cantidad debe ser un número entero"}, status=400)
+
+    if new_quantity > carreto_product.product.stock:
+        return Response({"status": "error", "message": "La cantidad solicitada excede el stock disponible"}, status=400)
+
+    # Actualizar la cantidad y el precio total del carrito
+    previous_quantity = carreto_product.quantitat
+    carreto_product.quantitat = new_quantity
+    carreto_product.preu = carreto_product.product.price * new_quantity
+    carreto_product.save()
+
+    carreto.preu_total += (new_quantity - previous_quantity) * carreto_product.product.price
+    carreto.save()
+
+    carreto_serializer = CarretoSerializer(carreto)
+    carreto_products = carreto.carretoproduct_set.all()
+    carreto_products_serializer = CarretoProductSerializer(carreto_products, many=True)
+
+    response_data = {
+        "status": "success",
+        "message": "Cantidad del producto actualizada exitosamente",
+        "carreto_info": carreto_serializer.data,
+        "carreto_products": carreto_products_serializer.data
+    }
+
+    return Response(response_data, status=200)
+
 #Consultar el llistat de productes del carretó
 @api_view(['GET'])
 def list_carreto_products(request, client_id, carreto_id):
