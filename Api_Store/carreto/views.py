@@ -256,4 +256,27 @@ def realitzar_compra(request):
         "carreto_products": carreto_products_serializer.data
     }
 
+<<<<<<< Updated upstream
     return Response(response_data, status=200)
+=======
+    return Response(response_data, status=200)
+
+@api_view(['GET'])
+def list_all_carretos(request):
+    carretos = Carreto.objects.all()
+    response_data = []
+
+    for carreto in carretos:
+        carreto_data = CarretoSerializer(carreto).data
+        carreto_products = CarretoProduct.objects.filter(carreto=carreto)
+        carreto_products_data = CarretoProductSerializer(carreto_products, many=True).data
+
+        carreto_info = {
+            "carreto_info": carreto_data,
+            "carreto_products": carreto_products_data
+        }
+
+        response_data.append(carreto_info)
+
+    return Response({"status": "success", "message": "Todos los carritos encontrados exitosamente", "data": response_data}, status=200)
+>>>>>>> Stashed changes

@@ -9,4 +9,8 @@ urlpatterns = [
     path('update_quantity_product/', views.update_product_quantity, name='update_quantity_product'),
     path('list_products_carreto/<int:client_id>/<int:carreto_id>/', views.list_carreto_products, name='list_carreto_products'),
     path('comprar_carreto/', views.realitzar_compra, name='comprar_carreto'),
+<<<<<<< Updated upstream
+=======
+    path('', views.list_all_carretos, name='list_all_carretos'),
+>>>>>>> Stashed changes
 ]
