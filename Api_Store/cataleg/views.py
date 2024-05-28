@@ -9,10 +9,18 @@ from .models import Product
 #Afegir producte
 @api_view(['POST'])
 def add_product(request):
-    serializer = ProductSerializer(data=request.data)
+    # Extraer datos del request
+    data = request.data
+    # Verificar si el producto ya existe basado en algún campo único, por ejemplo, el nombre
+    if Product.objects.filter(name=data.get('name')).exists():
+        return Response({"message": "El producto ya existe"}, status=400)
+
+    # Serializar los datos
+    serializer = ProductSerializer(data=data)
     if serializer.is_valid():
         serializer.save()
         return Response({"message": "Producto añadido exitosamente", "data": serializer.data}, status=201)
+
     return Response({"error": serializer.errors, "message": "No se ha podido añadir el producto"}, status=400)
 
 #Actulizar un producto
@@ -34,10 +42,16 @@ def update_stock_product(request, pk):
     try:
         product = Product.objects.get(pk=pk)
     except Product.DoesNotExist:
-        return Response({"error": "El producto que quieres actulizar el stock no existe"}, status=404)
-    product.stock = request.data.get('stock',product.stock)
+        return Response({"error": "El producto que quieres actualizar el stock no existe"}, status=404)
+
+    product.stock = request.data.get('stock', product.stock)
     product.save()
-    return Response({"message": "Producto actualizado exitosamente"}, status=200)
+
+    # Serializamos el producto actualizado para incluir los datos en la respuesta
+    serializer = ProductSerializer(product)
+
+    return Response({"message": "Producto actualizado exitosamente", "data": serializer.data}, status=200)
+
 
 #Borrado logico de un producto
 @api_view(['DELETE'])
