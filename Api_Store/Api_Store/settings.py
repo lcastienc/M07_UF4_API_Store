@@ -41,7 +41,8 @@ INSTALLED_APPS = [
     'cataleg',
     'client',
     'carreto',
-    'comandes'
+    'comandes',
+    'pagament'
 ]
 
 MIDDLEWARE = [
