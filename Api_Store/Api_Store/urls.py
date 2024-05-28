@@ -22,4 +22,5 @@ urlpatterns = [
     path('cataleg/', include('cataleg.urls')),
     path('clients/', include('client.urls')),
     path('carreto/', include('carreto.urls')),
+    path('comandes/', include('comandes.urls')),
 ]
